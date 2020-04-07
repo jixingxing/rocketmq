@@ -28,6 +28,9 @@ import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.apache.rocketmq.store.SelectMappedBufferResult;
 
+/**
+ * Master-Slave数据同步
+ */
 public class HAConnection {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
     private final HAService haService;
