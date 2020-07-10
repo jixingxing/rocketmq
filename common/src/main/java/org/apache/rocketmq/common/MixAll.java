@@ -142,7 +142,7 @@ public class MixAll {
 
         return 0;
     }
-
+    //string2File = string2FileSafe ，相当于有先备份再改写，所以就安全了
     public static void string2File(final String str, final String fileName) throws IOException {
 
         String tmpFile = fileName + ".tmp";

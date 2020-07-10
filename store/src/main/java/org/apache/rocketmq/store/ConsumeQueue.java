@@ -39,6 +39,7 @@ public class ConsumeQueue {
 
     private final String storePath;
     private final int mappedFileSize;
+    // maxPhysicOffset 存储的是当前ConsumeQueue在CommitLog中的最大offset
     private long maxPhysicOffset = -1;
     private volatile long minLogicOffset = 0;
     private ConsumeQueueExt consumeQueueExt = null;
@@ -103,7 +104,12 @@ public class ConsumeQueue {
                     long offset = byteBuffer.getLong();
                     int size = byteBuffer.getInt();
                     long tagsCode = byteBuffer.getLong();
-
+                    // 同样ConsumeQueue文件采取定长设计，
+                    // 每一个条目共20个字节，分别为
+                    // 8字节的CommitLog物理偏移量、
+                    // 4字节的消息长度、
+                    // 8字节tag hashcode，
+                    // 单个文件由30W个条目组成，可以像数组一样随机访问每一个条目，每个ConsumeQueue文件大小约5.72M；
                     if (offset >= 0 && size > 0) {
                         mappedFileOffset = i + CQ_STORE_UNIT_SIZE;
                         this.maxPhysicOffset = offset + size;

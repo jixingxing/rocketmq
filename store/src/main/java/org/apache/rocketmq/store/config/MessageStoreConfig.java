@@ -114,10 +114,11 @@ public class MessageStoreConfig {
     private int maxMsgsNumBatch = 64;
     @ImportantField
     private boolean messageIndexSafe = false;
+    //haListenPort 表示Master监听Slave请求的端口,默认为服务端口(listenPort)+1
     private int haListenPort = 10912;
     private int haSendHeartbeatInterval = 1000 * 5;
     private int haHousekeepingInterval = 1000 * 20;
-    private int haTransferBatchSize = 1024 * 32;
+    private int haTransferBatchSize = 1024 * 32;//32kb
     @ImportantField
     private String haMasterAddress = null;
     private int haSlaveFallbehindMax = 1024 * 1024 * 256;

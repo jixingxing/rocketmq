@@ -93,6 +93,7 @@ public class IndexFile {
         if (this.indexHeader.getIndexCount() < this.indexNum) {
             int keyHash = indexKeyHashMethod(key);
             int slotPos = keyHash % this.hashSlotNum;
+            //
             int absSlotPos = IndexHeader.INDEX_HEADER_SIZE + slotPos * hashSlotSize;
 
             FileLock fileLock = null;
@@ -122,6 +123,12 @@ public class IndexFile {
                     IndexHeader.INDEX_HEADER_SIZE + this.hashSlotNum * hashSlotSize
                         + this.indexHeader.getIndexCount() * indexSize;
 
+                /**
+                 * 一条索引的数据结构 indexSize=20
+                 * Key Hash |Commit Log Offset  |Timestamp  |Next Index Offset
+                 * 4Byte    |8Byte              |4Byte      |4Byte
+                 */
+
                 this.mappedByteBuffer.putInt(absIndexPos, keyHash);
                 this.mappedByteBuffer.putLong(absIndexPos + 4, phyOffset);
                 this.mappedByteBuffer.putInt(absIndexPos + 4 + 8, (int) timeDiff);
@@ -135,6 +142,7 @@ public class IndexFile {
                 }
 
                 this.indexHeader.incHashSlotCount();
+                //incIndexCount 将当前的indexCount+1，并写入到IndexHead中
                 this.indexHeader.incIndexCount();
                 this.indexHeader.setEndPhyOffset(phyOffset);
                 this.indexHeader.setEndTimestamp(storeTimestamp);

@@ -40,6 +40,12 @@ import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.apache.rocketmq.store.CommitLog;
 import org.apache.rocketmq.store.DefaultMessageStore;
 
+/**
+ * 启动流程
+ * org.apache.rocketmq.broker.BrokerController#start()
+ * -->org.apache.rocketmq.store.DefaultMessageStore#start() 如果不是enableDLegerCommitLog的情况下，启动HAService
+ * -->org.apache.rocketmq.store.ha.HAService#start()
+ */
 public class HAService {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
@@ -106,9 +112,13 @@ public class HAService {
     // }
 
     public void start() throws Exception {
+        //监听slave请求，默认端口：haListenPort=10912
         this.acceptSocketService.beginAccept();
         this.acceptSocketService.start();
+
+        //只有BrokerRole.SYNC_MASTER 用于等待Slave数据同步完成
         this.groupTransferService.start();
+        //用于Slave 连接 Master 逻辑
         this.haClient.start();
     }
 
@@ -155,6 +165,8 @@ public class HAService {
 
     /**
      * Listens to slave connections to create {@link HAConnection}.
+     *
+     * Master 开始监听，等待Slave 连接上了
      */
     class AcceptSocketService extends ServiceThread {
         private final SocketAddress socketAddressListen;
@@ -215,6 +227,7 @@ public class HAService {
                                         + sc.socket().getRemoteSocketAddress());
 
                                     try {
+                                        //当一个Slave连接上来了
                                         HAConnection conn = new HAConnection(HAService.this, sc);
                                         conn.start();
                                         HAService.this.addConnection(conn);
@@ -255,7 +268,7 @@ public class HAService {
         private final WaitNotifyObject notifyTransferObject = new WaitNotifyObject();
         private volatile List<CommitLog.GroupCommitRequest> requestsWrite = new ArrayList<>();
         private volatile List<CommitLog.GroupCommitRequest> requestsRead = new ArrayList<>();
-
+        //当Broker是BrokerRole.SYNC_MASTER的时候，会put一个Request等待Slave同步完成
         public synchronized void putRequest(final CommitLog.GroupCommitRequest request) {
             synchronized (this.requestsWrite) {
                 this.requestsWrite.add(request);
@@ -324,7 +337,7 @@ public class HAService {
     }
 
     class HAClient extends ServiceThread {
-        private static final int READ_MAX_BUFFER_SIZE = 1024 * 1024 * 4;
+        private static final int READ_MAX_BUFFER_SIZE = 1024 * 1024 * 4;//4M
         private final AtomicReference<String> masterAddress = new AtomicReference<>();
         private final ByteBuffer reportOffset = ByteBuffer.allocate(8);
         private SocketChannel socketChannel;

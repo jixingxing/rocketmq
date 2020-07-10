@@ -66,7 +66,7 @@ public class WaitNotifyObject {
             boolean needNotify = false;
 
             for (Boolean value : this.waitingThreadTable.values()) {
-                needNotify = needNotify || !value;
+                needNotify = needNotify || !value;//{!false}
                 value = true;
             }
 

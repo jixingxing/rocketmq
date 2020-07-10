@@ -680,6 +680,8 @@ public class CommitLog {
                 if (service.isSlaveOK(result.getWroteOffset() + result.getWroteBytes())) {
                     GroupCommitRequest request = new GroupCommitRequest(result.getWroteOffset() + result.getWroteBytes());
                     service.putRequest(request);
+                    //当没有消息需要同步給Slave的时候，HAConnection.WriteSocketService 中会出现等待的逻辑
+                    //所以此处需要唤醒
                     service.getWaitNotifyObject().wakeupAll();
                     boolean flushOK =
                         request.waitForFlush(this.defaultMessageStore.getMessageStoreConfig().getSyncFlushTimeout());

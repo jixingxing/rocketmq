@@ -28,7 +28,8 @@ public class MessageExt extends Message {
     private int queueId;
 
     private int storeSize;
-
+    //queueOffset offset 是逻辑index eg:0,1,2,3....
+    //因为ConsumeQueue文件的中单条记录的大小就是20
     private long queueOffset;
     private int sysFlag;
     private long bornTimestamp;

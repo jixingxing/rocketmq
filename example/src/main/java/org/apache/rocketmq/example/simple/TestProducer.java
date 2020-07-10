@@ -36,6 +36,8 @@ public class TestProducer {
                         "TagA",
                         "key113",
                         "Hello world".getBytes(RemotingHelper.DEFAULT_CHARSET));
+
+
                     SendResult sendResult = producer.send(msg);
                     System.out.printf("%s%n", sendResult);
 

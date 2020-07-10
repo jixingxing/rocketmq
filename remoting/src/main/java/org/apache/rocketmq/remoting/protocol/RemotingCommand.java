@@ -142,8 +142,16 @@ public class RemotingCommand {
     }
 
     public static RemotingCommand decode(final ByteBuffer byteBuffer) {
+        /**
+         * Message Length | SerializeType + Header Length | Data Header | Message Body
+         *
+         * Message Length = (SerializeType + Header Length) + (Data Header) + (Message Body)
+         */
+        //length = (SerializeType + Header Length) + (Data Header) + (Message Body)
         int length = byteBuffer.limit();
+        //oriHeaderLen = 序列化类型&消息头长度
         int oriHeaderLen = byteBuffer.getInt();
+        //headerLength =  oriHeaderLen的后面24位
         int headerLength = getHeaderLength(oriHeaderLen);
 
         byte[] headerData = new byte[headerLength];
@@ -163,6 +171,8 @@ public class RemotingCommand {
     }
 
     public static int getHeaderLength(int length) {
+        //length & 24个1，意思取length的后24作为header的长度
+        //序列化类型&消息头长度：同样占用一个int类型，第一个字节表示序列化类型，后面三个字节表示消息头长度；
         return length & 0xFFFFFF;
     }
 
@@ -401,7 +411,12 @@ public class RemotingCommand {
     }
 
     public ByteBuffer encodeHeader(final int bodyLength) {
+
+        /**
+         * Message Length = (SerializeType + Header Length) + (Data Header) + (Message Body)
+         */
         // 1> header length size
+        // (SerializeType + Header Length)
         int length = 4;
 
         // 2> header data length
@@ -413,7 +428,7 @@ public class RemotingCommand {
         // 3> body data length
         length += bodyLength;
 
-        ByteBuffer result = ByteBuffer.allocate(4 + length - bodyLength);
+        ByteBuffer result = ByteBuffer.allocate(4/*Message Length的大小*/ + length - bodyLength);
 
         // length
         result.putInt(length);

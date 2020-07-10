@@ -145,6 +145,9 @@ public class HAConnection {
             return ReadSocketService.class.getSimpleName();
         }
 
+        /**
+         * 读取 Slave 发到 Master 的消息头
+         */
         private boolean processReadEvent() {
             int readSizeZeroTimes = 0;
 
@@ -169,7 +172,7 @@ public class HAConnection {
                                 HAConnection.this.slaveRequestOffset = readOffset;
                                 log.info("slave[" + HAConnection.this.clientAddr + "] request offset " + readOffset);
                             }
-
+                            //Slave 发回来的已经同步的 offset
                             HAConnection.this.haService.notifyTransferSome(HAConnection.this.slaveAckOffset);
                         }
                     } else if (readSize == 0) {
@@ -271,6 +274,7 @@ public class HAConnection {
                         HAConnection.this.haService.getDefaultMessageStore().getCommitLogData(this.nextTransferFromWhere);
                     if (selectResult != null) {
                         int size = selectResult.getSize();
+                        //此处的判断是为了避免一次給Slave发送的消息太大，HAClient吃不下
                         if (size > HAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig().getHaTransferBatchSize()) {
                             size = HAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig().getHaTransferBatchSize();
                         }
@@ -331,6 +335,7 @@ public class HAConnection {
             int writeSizeZeroTimes = 0;
             // Write Header
             while (this.byteBufferHeader.hasRemaining()) {
+                //向Slave写入消息头
                 int writeSize = this.socketChannel.write(this.byteBufferHeader);
                 if (writeSize > 0) {
                     writeSizeZeroTimes = 0;

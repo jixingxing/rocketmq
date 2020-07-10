@@ -42,6 +42,7 @@ import org.apache.rocketmq.store.util.LibC;
 import sun.nio.ch.DirectBuffer;
 
 public class MappedFile extends ReferenceResource {
+    //内存页大小，4KB
     public static final int OS_PAGE_SIZE = 1024 * 4;
     protected static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
@@ -57,9 +58,13 @@ public class MappedFile extends ReferenceResource {
     /**
      * Message will put to here first, and then reput to FileChannel if writeBuffer is not null.
      */
+    //如果启用了TransientStorePool，则writeBuffer为从暂时存储池中借用
+    //的buffer，此时存储对象（比如消息等）会先写入该writeBuffer，然后
+    //commit到fileChannel，最后对fileChannel进行flush刷盘
     protected ByteBuffer writeBuffer = null;
     protected TransientStorePool transientStorePool = null;
     private String fileName;
+    //fileFromOffset = 文件名
     private long fileFromOffset;
     private File file;
     private MappedByteBuffer mappedByteBuffer;
